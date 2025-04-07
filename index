@@ -1,1 +1,274 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>N8N Supabase Uploader</title>
+    <link href="https://releases.transloadit.com/uppy/v3.6.1/uppy.min.css" rel="stylesheet" />
 
+    <style>
+      html {
+        background: #3ECF8E; /* Supabase green */
+      }
+      body {
+        height: 100vh;
+        background: radial-gradient(72.03% 66.03% at 50% 69.72%, #ffffff 0, transparent 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      }
+      h1 {
+        color: #1F1F1F;
+        margin-bottom: 10px;
+      }
+      #drag-drop-area {
+        margin: 20px auto;
+        width: 90%;
+        max-width: 700px;
+      }
+      #uploaded-files {
+        margin-top: 30px;
+        width: 90%;
+        max-width: 700px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      #upload-info {
+        margin-top: 10px;
+        display: none;
+      }
+      .file-item {
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eaeaea;
+        padding-bottom: 15px;
+      }
+      .file-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .file-url {
+        word-break: break-all;
+        font-family: monospace;
+        background-color: #f1f1f1;
+        padding: 8px;
+        border-radius: 4px;
+        margin: 5px 0;
+      }
+      .n8n-trigger {
+        margin-top: 10px;
+      }
+      .n8n-trigger button {
+        background-color: #5352ED;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .n8n-trigger button:hover {
+        background-color: #3C3BBA;
+      }
+      .n8n-trigger button:disabled {
+        background-color: #B8B8D4;
+        cursor: not-allowed;
+      }
+      .status-message {
+        margin-top: 8px;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .success {
+        background-color: #DFF2BF;
+        color: #4F8A10;
+      }
+      .error {
+        background-color: #FFBABA;
+        color: #D8000C;
+      }
+      .processing {
+        background-color: #BDE5F8;
+        color: #00529B;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>N8N File Uploader</h1>
+    <div id="drag-drop-area"></div>
+    
+    <div id="uploaded-files">
+      <h2>Uploaded Files</h2>
+      <p id="no-files">No files uploaded yet.</p>
+      <div id="file-list"></div>
+    </div>
+
+    <script type="module">
+      import {
+        Uppy,
+        Dashboard,
+        Tus,
+      } from 'https://releases.transloadit.com/uppy/v3.6.1/uppy.min.mjs'
+
+      // Your Supabase configuration
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dXNnZXNscHl6bWlxY3FzZXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgxMzcxMjUsImV4cCI6MjA1MzcxMzEyNX0.1NScNUghLOTAcfRi9RPM442FFK8DUHOHZ_gYiRxxTY8'
+      const SUPABASE_PROJECT_ID = 'kyusgeslpyzmiqcqseug'
+      const STORAGE_BUCKET = 'N8N'
+      const BEARER_TOKEN = SUPABASE_ANON_KEY // Using the anon key for public uploads
+      
+      // N8N webhook configuration - not visible to end users in the UI
+      const N8N_WEBHOOK_URL = 'https://accounts-da.app.n8n.cloud/webhook/upload-audio'
+
+      // You can specify a folder within your bucket if needed
+      const folder = ''
+      const supabaseStorageURL = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/upload/resumable`
+      const fileList = document.getElementById('file-list')
+      const noFilesMsg = document.getElementById('no-files')
+
+      var uppy = new Uppy({
+        restrictions: {
+          maxFileSize: 100 * 1024 * 1024, // 100MB limit
+          maxNumberOfFiles: 10,
+        },
+        autoProceed: false
+      })
+        .use(Dashboard, {
+          inline: true,
+          target: '#drag-drop-area',
+          showProgressDetails: true,
+          proudlyDisplayPoweredByUppy: false,
+          height: 320,
+        })
+        .use(Tus, {
+          endpoint: supabaseStorageURL,
+          headers: {
+            authorization: `Bearer ${BEARER_TOKEN}`,
+            apikey: SUPABASE_ANON_KEY,
+            'x-upsert': 'true', // Set to true to overwrite existing files
+          },
+          uploadDataDuringCreation: true,
+          chunkSize: 6 * 1024 * 1024, // Must be 6MB for Supabase
+          allowedMetaFields: ['bucketName', 'objectName', 'contentType', 'cacheControl'],
+          onError: function (error) {
+            console.error('Upload failed:', error)
+          },
+        })
+
+      uppy.on('file-added', (file) => {
+        const supabaseMetadata = {
+          bucketName: STORAGE_BUCKET,
+          objectName: folder ? `${folder}/${file.name}` : file.name,
+          contentType: file.type,
+        }
+
+        file.meta = {
+          ...file.meta,
+          ...supabaseMetadata,
+        }
+      })
+
+      uppy.on('upload-success', (file, response) => {
+        // Hide the "no files" message
+        noFilesMsg.style.display = 'none'
+
+        // Calculate the Supabase public URL for the file
+        const publicUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${STORAGE_BUCKET}/${file.meta.objectName}`
+        
+        // Create an element to display the file info
+        const fileItem = document.createElement('div')
+        fileItem.className = 'file-item'
+        
+        const fileName = document.createElement('div')
+        fileName.className = 'file-name'
+        fileName.textContent = file.name
+        
+        const fileSize = document.createElement('div')
+        fileSize.textContent = `Size: ${formatBytes(file.size)}`
+        
+        const fileUrl = document.createElement('div')
+        fileUrl.className = 'file-url'
+        fileUrl.textContent = publicUrl
+        
+        // Create a button to trigger N8N workflow
+        const n8nTrigger = document.createElement('div')
+        n8nTrigger.className = 'n8n-trigger'
+        
+        const triggerBtn = document.createElement('button')
+        triggerBtn.textContent = 'Trigger N8N Workflow'
+        triggerBtn.onclick = function() {
+          triggerN8nWorkflow(publicUrl, file.name, triggerBtn, n8nTrigger)
+        }
+        
+        n8nTrigger.appendChild(triggerBtn)
+        
+        fileItem.appendChild(fileName)
+        fileItem.appendChild(fileSize)
+        fileItem.appendChild(fileUrl)
+        fileItem.appendChild(n8nTrigger)
+        
+        fileList.appendChild(fileItem)
+      })
+
+      // Function to format bytes to human-readable format
+      function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes'
+        
+        const k = 1024
+        const dm = decimals < 0 ? 0 : decimals
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+        
+        const i = Math.floor(Math.log(bytes) / Math.log(k))
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+      }
+
+      // Function to trigger N8N workflow with the file URL
+      function triggerN8nWorkflow(fileUrl, fileName, buttonElement, containerElement) {
+        // Disable button to prevent multiple submissions
+        buttonElement.disabled = true
+        buttonElement.textContent = 'Sending...'
+        
+        // Add status message element
+        const statusMsg = document.createElement('div')
+        statusMsg.className = 'status-message processing'
+        statusMsg.textContent = 'Processing request...'
+        containerElement.appendChild(statusMsg)
+        
+        // Send request to N8N webhook
+        fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileUrl: fileUrl,
+            fileName: fileName,
+            timestamp: new Date().toISOString()
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok')
+          }
+          return response.json()
+        })
+        .then(data => {
+          console.log('N8N workflow triggered successfully:', data)
+          statusMsg.className = 'status-message success'
+          statusMsg.textContent = 'Workflow triggered successfully!'
+          buttonElement.textContent = 'Workflow Triggered'
+        })
+        .catch(error => {
+          console.error('Error triggering N8N workflow:', error)
+          statusMsg.className = 'status-message error'
+          statusMsg.textContent = 'Error triggering workflow. Please try again.'
+          buttonElement.disabled = false
+          buttonElement.textContent = 'Retry Trigger N8N Workflow'
+        })
+      }
+    </script>
+  </body>
+</html>
