@@ -2,108 +2,458 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>N8N Supabase Uploader</title>
+    <title>N8N File Uploader</title>
     <link href="https://releases.transloadit.com/uppy/v3.6.1/uppy.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
-      html {
-        background: #3ECF8E; /* Supabase green */
+      :root {
+        --primary: #9E1A59;
+        --primary-dark: #871748;
+        --primary-light: #F06292;
+        --secondary: #1B0D1B;
+        --accent: #BE2E70;
+        --accent-light: #F8BBD0;
+        --light: #F8F9FE;
+        --gray: #EBEEF5;
+        --text: #252135;
+        --text-light: #6e617f;
+        --success: #4CAF50;
+        --info: #2196F3;
+        --warning: #FF9800;
+        --error: #F44336;
       }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      html {
+        scroll-behavior: smooth;
+      }
+      
       body {
-        height: 100vh;
-        background: radial-gradient(72.03% 66.03% at 50% 69.72%, #ffffff 0, transparent 100%);
+        background-color: var(--light);
+        background-image: 
+          radial-gradient(circle at 10% 20%, rgba(158, 26, 89, 0.05) 0%, transparent 33%),
+          radial-gradient(circle at 90% 80%, rgba(158, 26, 89, 0.07) 0%, transparent 25%);
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 40px 20px;
+      }
+      
+      .app-container {
+        width: 100%;
+        max-width: 900px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      header {
+        margin-bottom: 40px;
+        text-align: center;
+        position: relative;
+      }
+      
+      header::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(to right, var(--primary), var(--primary-light));
+        border-radius: 4px;
+      }
+      
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--secondary);
+        margin-bottom: 10px;
+        position: relative;
+        display: inline-block;
+      }
+      
+      h1 i {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-right: 10px;
+        vertical-align: middle;
+      }
+      
+      h2 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--secondary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      h2 i {
+        color: var(--primary);
+      }
+      
+      .subtitle {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        max-width: 600px;
+        text-align: center;
+      }
+      
+      .card {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        width: 100%;
+        margin-bottom: 40px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+      }
+      
+      .card-header {
+        background: linear-gradient(to right, var(--primary), var(--primary-light));
+        padding: 20px 30px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .card-body {
+        padding: 30px;
+      }
+      
+      #drag-drop-area {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      
+      /* Override Uppy styles for more modern look */
+      .uppy-Dashboard-inner {
+        border: 2px dashed var(--accent-light) !important;
+        background-color: white !important;
+        border-radius: 12px !important;
+      }
+      
+      .uppy-Dashboard-AddFiles-title {
+        color: var(--text) !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 500 !important;
+      }
+      
+      .uppy-Dashboard-browse {
+        color: var(--primary) !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+      }
+      
+      .uppy-Dashboard-dropFilesHereHint {
+        border-radius: 8px !important;
+        background-color: var(--accent-light) !important;
+        color: var(--primary) !important;
+        font-weight: 500 !important;
+      }
+      
+      .uppy-Dashboard-Item-previewInnerWrap {
+        border-radius: 8px !important;
+      }
+      
+      .uppy-Dashboard-Item-name {
+        font-family: 'Poppins', sans-serif !important;
+      }
+      
+      .uppy-Dashboard-Item-statusSize {
+        font-family: 'Poppins', sans-serif !important;
+      }
+      
+      .uppy-StatusBar {
+        background-color: var(--light) !important;
+      }
+      
+      .uppy-StatusBar-progress {
+        background-color: var(--primary) !important;
+      }
+      
+      .uppy-StatusBar-actions button {
+        font-family: 'Poppins', sans-serif !important;
+      }
+      
+      .uppy-u-reset.uppy-c-btn.uppy-c-btn-primary {
+        background-color: var(--primary) !important;
+      }
+      
+      #no-files {
+        color: var(--text-light);
+        text-align: center;
+        padding: 30px;
+        background-color: var(--light);
+        border-radius: 12px;
+        font-size: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+      }
+      
+      #no-files i {
+        font-size: 3rem;
+        color: var(--primary-light);
+        opacity: 0.7;
+      }
+      
+      .file-item {
+        margin-bottom: 25px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid var(--gray);
+        animation: fadeIn 0.5s ease;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .file-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+      
+      .file-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      
+      .file-icon {
+        background-color: var(--accent-light);
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: var(--primary);
+        font-size: 1.2rem;
       }
-      h1 {
-        color: #1F1F1F;
-        margin-bottom: 10px;
+      
+      .file-details {
+        flex: 1;
       }
-      #drag-drop-area {
-        margin: 20px auto;
-        width: 90%;
-        max-width: 700px;
-      }
-      #uploaded-files {
-        margin-top: 30px;
-        width: 90%;
-        max-width: 700px;
-        background-color: rgba(255, 255, 255, 0.8);
-        border-radius: 8px;
-        padding: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      #upload-info {
-        margin-top: 10px;
-        display: none;
-      }
-      .file-item {
-        margin-bottom: 15px;
-        border-bottom: 1px solid #eaeaea;
-        padding-bottom: 15px;
-      }
+      
       .file-name {
-        font-weight: bold;
-        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--secondary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
+      
+      .file-name .badge {
+        background-color: var(--success);
+        color: white;
+        font-size: 0.7rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+      
+      .file-size {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .file-size i {
+        font-size: 0.8rem;
+      }
+      
+      .file-url-container {
+        background-color: var(--light);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        position: relative;
+      }
+      
       .file-url {
         word-break: break-all;
         font-family: monospace;
-        background-color: #f1f1f1;
-        padding: 8px;
+        font-size: 0.9rem;
+        color: var(--text);
+      }
+      
+      .copy-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: white;
+        border: 1px solid var(--gray);
         border-radius: 4px;
-        margin: 5px 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-light);
+        transition: all 0.2s ease;
       }
+      
+      .copy-btn:hover {
+        color: var(--primary);
+        border-color: var(--primary-light);
+      }
+      
       .n8n-trigger {
-        margin-top: 10px;
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
       }
-      .n8n-trigger button {
-        background-color: #5352ED;
+      
+      .btn {
+        background-color: var(--primary);
         color: white;
         border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
+        border-radius: 8px;
+        padding: 12px 24px;
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 500;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
-      .n8n-trigger button:hover {
-        background-color: #3C3BBA;
+      
+      .btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(158, 26, 89, 0.2);
       }
-      .n8n-trigger button:disabled {
-        background-color: #B8B8D4;
+      
+      .btn:disabled {
+        background-color: var(--gray);
+        color: var(--text-light);
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
       }
+      
       .status-message {
-        margin-top: 8px;
-        padding: 6px 10px;
-        border-radius: 4px;
-        font-size: 14px;
+        margin-top: 12px;
+        padding: 12px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
+      
       .success {
-        background-color: #DFF2BF;
-        color: #4F8A10;
+        background-color: rgba(76, 175, 80, 0.1);
+        color: var(--success);
+        border-left: 4px solid var(--success);
       }
+      
       .error {
-        background-color: #FFBABA;
-        color: #D8000C;
+        background-color: rgba(244, 67, 54, 0.1);
+        color: var(--error);
+        border-left: 4px solid var(--error);
       }
+      
       .processing {
-        background-color: #BDE5F8;
-        color: #00529B;
+        background-color: rgba(33, 150, 243, 0.1);
+        color: var(--info);
+        border-left: 4px solid var(--info);
+      }
+      
+      footer {
+        margin-top: 40px;
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.9rem;
+      }
+      
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        body {
+          padding: 20px 15px;
+        }
+        
+        h1 {
+          font-size: 2rem;
+        }
+        
+        h2 {
+          font-size: 1.5rem;
+        }
+        
+        .card-body {
+          padding: 20px;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>N8N File Uploader</h1>
-    <div id="drag-drop-area"></div>
-    
-    <div id="uploaded-files">
-      <h2>Uploaded Files</h2>
-      <p id="no-files">No files uploaded yet.</p>
-      <div id="file-list"></div>
+    <div class="app-container">
+      <header>
+        <h1><i class="fas fa-cloud-upload-alt"></i> File Uploader</h1>
+        <p class="subtitle">Upload your files to Supabase storage and trigger N8N workflows with ease</p>
+      </header>
+      
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-upload"></i>
+          <h2 style="margin-bottom:0; color:white;">Upload Files</h2>
+        </div>
+        <div class="card-body">
+          <div id="drag-drop-area"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-file-alt"></i>
+          <h2 style="margin-bottom:0; color:white;">Uploaded Files</h2>
+        </div>
+        <div class="card-body">
+          <p id="no-files">
+            <i class="fas fa-inbox"></i>
+            No files uploaded yet. Drag and drop files above or click browse to select files.
+          </p>
+          <div id="file-list"></div>
+        </div>
+      </div>
+      
+      <footer>
+        &copy; 2025 File Uploader - Powered by Supabase & N8N
+      </footer>
     </div>
 
     <script type="module">
@@ -181,32 +531,98 @@
         const fileItem = document.createElement('div')
         fileItem.className = 'file-item'
         
+        // Get file extension and determine icon
+        const extension = file.name.split('.').pop().toLowerCase()
+        let fileIconClass = 'fas fa-file'
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(extension)) {
+          fileIconClass = 'fas fa-file-image'
+        } else if (['pdf'].includes(extension)) {
+          fileIconClass = 'fas fa-file-pdf'
+        } else if (['doc', 'docx'].includes(extension)) {
+          fileIconClass = 'fas fa-file-word'
+        } else if (['xls', 'xlsx'].includes(extension)) {
+          fileIconClass = 'fas fa-file-excel'
+        } else if (['ppt', 'pptx'].includes(extension)) {
+          fileIconClass = 'fas fa-file-powerpoint'
+        } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
+          fileIconClass = 'fas fa-file-audio'
+        } else if (['mp4', 'avi', 'mov', 'webm'].includes(extension)) {
+          fileIconClass = 'fas fa-file-video'
+        } else if (['zip', 'rar', '7z'].includes(extension)) {
+          fileIconClass = 'fas fa-file-archive'
+        } else if (['js', 'html', 'css', 'php', 'py', 'java', 'json'].includes(extension)) {
+          fileIconClass = 'fas fa-file-code'
+        } else if (['txt', 'md'].includes(extension)) {
+          fileIconClass = 'fas fa-file-alt'
+        }
+        
+        // Create file header container
+        const fileHeader = document.createElement('div')
+        fileHeader.className = 'file-header'
+        
+        // Create file icon
+        const fileIcon = document.createElement('div')
+        fileIcon.className = 'file-icon'
+        fileIcon.innerHTML = `<i class="${fileIconClass}"></i>`
+        
+        // Create file details container
+        const fileDetails = document.createElement('div')
+        fileDetails.className = 'file-details'
+        
         const fileName = document.createElement('div')
         fileName.className = 'file-name'
-        fileName.textContent = file.name
+        fileName.innerHTML = `${file.name} <span class="badge">Uploaded</span>`
         
         const fileSize = document.createElement('div')
-        fileSize.textContent = `Size: ${formatBytes(file.size)}`
+        fileSize.className = 'file-size'
+        fileSize.innerHTML = `<i class="fas fa-hdd"></i> ${formatBytes(file.size)}`
+        
+        fileDetails.appendChild(fileName)
+        fileDetails.appendChild(fileSize)
+        
+        fileHeader.appendChild(fileIcon)
+        fileHeader.appendChild(fileDetails)
+        
+        // Create URL container with copy button
+        const fileUrlContainer = document.createElement('div')
+        fileUrlContainer.className = 'file-url-container'
         
         const fileUrl = document.createElement('div')
         fileUrl.className = 'file-url'
         fileUrl.textContent = publicUrl
+        
+        const copyBtn = document.createElement('button')
+        copyBtn.className = 'copy-btn'
+        copyBtn.innerHTML = '<i class="fas fa-copy"></i>'
+        copyBtn.title = 'Copy URL'
+        copyBtn.onclick = function() {
+          navigator.clipboard.writeText(publicUrl).then(() => {
+            copyBtn.innerHTML = '<i class="fas fa-check"></i>'
+            setTimeout(() => {
+              copyBtn.innerHTML = '<i class="fas fa-copy"></i>'
+            }, 2000)
+          })
+        }
+        
+        fileUrlContainer.appendChild(fileUrl)
+        fileUrlContainer.appendChild(copyBtn)
         
         // Create a button to trigger N8N workflow
         const n8nTrigger = document.createElement('div')
         n8nTrigger.className = 'n8n-trigger'
         
         const triggerBtn = document.createElement('button')
-        triggerBtn.textContent = 'Trigger N8N Workflow'
+        triggerBtn.className = 'btn'
+        triggerBtn.innerHTML = '<i class="fas fa-play-circle"></i> Trigger N8N Workflow'
         triggerBtn.onclick = function() {
           triggerN8nWorkflow(publicUrl, file.name, triggerBtn, n8nTrigger)
         }
         
         n8nTrigger.appendChild(triggerBtn)
         
-        fileItem.appendChild(fileName)
-        fileItem.appendChild(fileSize)
-        fileItem.appendChild(fileUrl)
+        fileItem.appendChild(fileHeader)
+        fileItem.appendChild(fileUrlContainer)
         fileItem.appendChild(n8nTrigger)
         
         fileList.appendChild(fileItem)
@@ -229,12 +645,12 @@
       function triggerN8nWorkflow(fileUrl, fileName, buttonElement, containerElement) {
         // Disable button to prevent multiple submissions
         buttonElement.disabled = true
-        buttonElement.textContent = 'Sending...'
+        buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...'
         
         // Add status message element
         const statusMsg = document.createElement('div')
         statusMsg.className = 'status-message processing'
-        statusMsg.textContent = 'Processing request...'
+        statusMsg.innerHTML = '<i class="fas fa-info-circle"></i> Processing request...'
         containerElement.appendChild(statusMsg)
         
         // Send request to N8N webhook
@@ -258,15 +674,15 @@
         .then(data => {
           console.log('N8N workflow triggered successfully:', data)
           statusMsg.className = 'status-message success'
-          statusMsg.textContent = 'Workflow triggered successfully!'
-          buttonElement.textContent = 'Workflow Triggered'
+          statusMsg.innerHTML = '<i class="fas fa-check-circle"></i> Workflow triggered successfully!'
+          buttonElement.innerHTML = '<i class="fas fa-check"></i> Workflow Triggered'
         })
         .catch(error => {
           console.error('Error triggering N8N workflow:', error)
           statusMsg.className = 'status-message error'
-          statusMsg.textContent = 'Error triggering workflow. Please try again.'
+          statusMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error triggering workflow. Please try again.'
           buttonElement.disabled = false
-          buttonElement.textContent = 'Retry Trigger N8N Workflow'
+          buttonElement.innerHTML = '<i class="fas fa-redo"></i> Retry Trigger N8N Workflow'
         })
       }
     </script>
