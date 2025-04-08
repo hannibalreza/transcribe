@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>N8N File Uploader</title>
+    <title>File Uploader</title>
     <link href="https://releases.transloadit.com/uppy/v3.6.1/uppy.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -424,7 +424,7 @@
     <div class="app-container">
       <header>
         <h1><i class="fas fa-cloud-upload-alt"></i> File Uploader</h1>
-        <p class="subtitle">Upload your files to Supabase storage and trigger N8N workflows with ease</p>
+        <p class="subtitle">Receive a summarized version of your call by simply uploading it</p>
       </header>
       
       <div class="card">
@@ -614,7 +614,7 @@
         
         const triggerBtn = document.createElement('button')
         triggerBtn.className = 'btn'
-        triggerBtn.innerHTML = '<i class="fas fa-play-circle"></i> Trigger N8N Workflow'
+        triggerBtn.innerHTML = '<i class="fas fa-play-circle"></i> Submit for Summarization'
         triggerBtn.onclick = function() {
           triggerN8nWorkflow(publicUrl, file.name, triggerBtn, n8nTrigger)
         }
@@ -674,13 +674,13 @@
         .then(data => {
           console.log('N8N workflow triggered successfully:', data)
           statusMsg.className = 'status-message success'
-          statusMsg.innerHTML = '<i class="fas fa-check-circle"></i> Workflow triggered successfully!'
+          statusMsg.innerHTML = '<i class="fas fa-check-circle"></i> Request sent. Please wait while the summary is being generated in your file.'
           buttonElement.innerHTML = '<i class="fas fa-check"></i> Workflow Triggered'
         })
         .catch(error => {
           console.error('Error triggering N8N workflow:', error)
           statusMsg.className = 'status-message error'
-          statusMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error triggering workflow. Please try again.'
+          statusMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Something went wrong. Try again.'
           buttonElement.disabled = false
           buttonElement.innerHTML = '<i class="fas fa-redo"></i> Retry Trigger N8N Workflow'
         })
