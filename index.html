@@ -9,12 +9,12 @@
 
     <style>
       :root {
-        --primary: #9E1A59;
-        --primary-dark: #871748;
-        --primary-light: #F06292;
+        --primary: #9a0000;
+        --primary-dark: #7a0000;
+        --primary-light: #d60000;
         --secondary: #1B0D1B;
-        --accent: #BE2E70;
-        --accent-light: #F8BBD0;
+        --accent: #c40000;
+        --accent-light: #f5d6d6;
         --light: #F8F9FE;
         --gray: #EBEEF5;
         --text: #252135;
@@ -38,8 +38,8 @@
       body {
         background-color: var(--light);
         background-image: 
-          radial-gradient(circle at 10% 20%, rgba(158, 26, 89, 0.05) 0%, transparent 33%),
-          radial-gradient(circle at 90% 80%, rgba(158, 26, 89, 0.07) 0%, transparent 25%);
+          radial-gradient(circle at 10% 20%, rgba(154, 0, 0, 0.05) 0%, transparent 33%),
+          radial-gradient(circle at 90% 80%, rgba(154, 0, 0, 0.07) 0%, transparent 25%);
         font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         color: var(--text);
         display: flex;
@@ -71,7 +71,7 @@
         transform: translateX(-50%);
         width: 80px;
         height: 4px;
-        background: linear-gradient(to right, var(--primary), var(--primary-light));
+        background: linear-gradient(to right, #7a0000, #d60000);
         border-radius: 4px;
       }
       
@@ -129,7 +129,7 @@
       }
       
       .card-header {
-        background: linear-gradient(to right, var(--primary), var(--primary-light));
+        background: linear-gradient(to right, #7a0000, #e00000);
         padding: 20px 30px;
         color: white;
         display: flex;
@@ -335,7 +335,7 @@
       }
       
       .btn {
-        background-color: var(--primary);
+        background-color: #c40000;
         color: white;
         border: none;
         border-radius: 8px;
@@ -352,9 +352,9 @@
       }
       
       .btn:hover {
-        background-color: var(--primary-dark);
+        background-color: #7a0000;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(158, 26, 89, 0.2);
+        box-shadow: 0 4px 12px rgba(154, 0, 0, 0.2);
       }
       
       .btn:disabled {
