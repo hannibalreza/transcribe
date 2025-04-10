@@ -128,6 +128,24 @@
         box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
       }
       
+      /* Side by side forms */
+      .forms-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .form-column {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      @media (max-width: 768px) {
+        .forms-container {
+          flex-direction: column;
+        }
+      }
+      
       .card-header {
         background: linear-gradient(to right, #7a0000, #e00000);
         padding: 20px 30px;
@@ -139,6 +157,48 @@
       
       .card-body {
         padding: 30px;
+      }
+      
+      .form-container {
+        width: 100%;
+        margin-top: 20px;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text);
+      }
+      
+      .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--gray);
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        color: var(--text);
+        transition: all 0.2s ease;
+      }
+      
+      .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(154, 0, 0, 0.1);
+      }
+      
+      select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239a0000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 16px;
+        padding-right: 40px;
       }
       
       #drag-drop-area {
@@ -424,7 +484,7 @@
     <div class="app-container">
       <header>
         <h1><i class="fas fa-cloud-upload-alt"></i> File Uploader</h1>
-        <p class="subtitle">Receive a summarized version of your call by simply uploading it</p>
+        <p class="subtitle">Receive a structured report version of your call by simply uploading it</p>
       </header>
       
       <div class="card">
@@ -439,6 +499,71 @@
       
       <div class="card">
         <div class="card-header">
+          <i class="fas fa-users"></i>
+          <h2 style="margin-bottom:0; color:white;">Required Information</h2>
+        </div>
+        <div class="card-body">
+          <h3 style="margin-bottom: 20px;">Please fill in the relevant information below:</h3>
+          
+          <!-- Side by side forms -->
+          <div class="forms-container">
+            <!-- Employee Information Form -->
+            <div class="form-column">
+              <h4 style="margin-bottom: 15px; color: var(--primary-dark);">Employee Information</h4>
+              <form id="employee-form">
+                <div class="form-group">
+                  <label for="employee-name">Employee Name *</label>
+                  <select name="employeeName" id="employee-name" class="form-control" required>
+                    <option value="" disabled selected>Select employee name</option>
+                    <option value="ANDY">ANDY</option>
+                    <option value="NINA">NINA</option>
+                    <option value="STIJN">STIJN</option>
+                    <option value="THALIA">THALIA</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="project-name">Project Name *</label>
+                  <select name="projectName" id="project-name" class="form-control" required>
+                    <option value="" disabled selected>Select project name</option>
+                    <option value="company 1">company 1</option>
+                    <option value="company 2">company 2</option>
+                    <option value="company 3">company 3</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+            
+            <!-- CP Information Form -->
+            <div class="form-column">
+              <h4 style="margin-bottom: 15px; color: var(--primary-dark);">CP Information</h4>
+              <form id="cp-form">
+                <div class="form-group">
+                  <label for="cp-name">CP Name *</label>
+                  <input type="text" name="cpName" id="cp-name" class="form-control" placeholder="Enter CP name" required />
+                </div>
+                
+                <div class="form-group">
+                  <label for="job-title">Job Title *</label>
+                  <input type="text" name="jobTitle" id="job-title" class="form-control" placeholder="Enter job title" required />
+                </div>
+                
+                <div class="form-group">
+                  <label for="company-name">Company Name *</label>
+                  <input type="text" name="companyName" id="company-name" class="form-control" placeholder="Enter company name" required />
+                </div>
+              </form>
+            </div>
+          </div>
+          
+          <div class="status-message processing" id="form-status" style="display: none; margin-top: 15px;">
+            <i class="fas fa-spinner fa-spin"></i> Processing your request...
+          </div>
+        </div>
+      </div>
+      
+      <div class="card" id="uploaded-files-card" style="display: none;">
+        <div class="card-header">
           <i class="fas fa-file-alt"></i>
           <h2 style="margin-bottom:0; color:white;">Uploaded Files</h2>
         </div>
@@ -448,6 +573,12 @@
             No files uploaded yet. Drag and drop files above or click browse to select files.
           </p>
           <div id="file-list"></div>
+          
+          <div id="summarize-container" style="margin-top: 20px; display: none;">
+            <button type="button" id="submit-for-summarization" class="btn" style="width: 100%;">
+              <i class="fas fa-play-circle"></i> Submit for Summarization
+            </button>
+          </div>
         </div>
       </div>
       
@@ -477,6 +608,43 @@
       const supabaseStorageURL = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/upload/resumable`
       const fileList = document.getElementById('file-list')
       const noFilesMsg = document.getElementById('no-files')
+      const summarizeContainer = document.getElementById('summarize-container')
+      const submitForSummarizationBtn = document.getElementById('submit-for-summarization')
+      const formStatus = document.getElementById('form-status')
+      
+      // Function to validate all form fields are filled
+      function validateForms() {
+        const employeeName = document.getElementById('employee-name').value
+        const projectName = document.getElementById('project-name').value
+        const cpName = document.getElementById('cp-name').value
+        const jobTitle = document.getElementById('job-title').value
+        const companyName = document.getElementById('company-name').value
+        
+        // Check if all fields are filled
+        if (employeeName && projectName && cpName && jobTitle && companyName) {
+          document.getElementById('uploaded-files-card').style.display = 'block'
+          
+          // If we have a file uploaded, show the summarize button
+          if (uploadedFileUrl && uploadedFileName) {
+            summarizeContainer.style.display = 'block'
+          }
+          
+          return true
+        } else {
+          document.getElementById('uploaded-files-card').style.display = 'none'
+          return false
+        }
+      }
+      
+      // Add event listeners to all form fields to check validation
+      document.getElementById('employee-name').addEventListener('change', validateForms)
+      document.getElementById('project-name').addEventListener('change', validateForms)
+      document.getElementById('cp-name').addEventListener('input', validateForms)
+      document.getElementById('job-title').addEventListener('input', validateForms)
+      document.getElementById('company-name').addEventListener('input', validateForms)
+      
+      // Initial validation check
+      validateForms()
 
       var uppy = new Uppy({
         restrictions: {
@@ -616,7 +784,26 @@
         triggerBtn.className = 'btn'
         triggerBtn.innerHTML = '<i class="fas fa-play-circle"></i> Submit for Summarization'
         triggerBtn.onclick = function() {
-          triggerN8nWorkflow(publicUrl, file.name, triggerBtn, n8nTrigger)
+          // Get form values from both forms
+          const employeeName = document.getElementById('employee-name').value
+          const projectName = document.getElementById('project-name').value
+          const cpName = document.getElementById('cp-name').value
+          const jobTitle = document.getElementById('job-title').value
+          const companyName = document.getElementById('company-name').value
+          
+          let formData = {
+            employee: {
+              employeeName: employeeName,
+              projectName: projectName
+            },
+            cp: {
+              cpName: cpName,
+              jobTitle: jobTitle,
+              companyName: companyName
+            }
+          }
+          
+          triggerN8nWorkflow(publicUrl, file.name, triggerBtn, n8nTrigger, formData)
         }
         
         n8nTrigger.appendChild(triggerBtn)
@@ -626,6 +813,13 @@
         fileItem.appendChild(n8nTrigger)
         
         fileList.appendChild(fileItem)
+        
+        // Store the file URL and name for later use
+        uploadedFileUrl = publicUrl
+        uploadedFileName = file.name
+        
+        // Show the summarize button
+        summarizeContainer.style.display = 'block'
       })
 
       // Function to format bytes to human-readable format
@@ -641,8 +835,8 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
       }
 
-      // Function to trigger N8N workflow with the file URL
-      function triggerN8nWorkflow(fileUrl, fileName, buttonElement, containerElement) {
+      // Function to trigger N8N workflow with the file URL and form data
+      function triggerN8nWorkflow(fileUrl, fileName, buttonElement, containerElement, formData = {}) {
         // Disable button to prevent multiple submissions
         buttonElement.disabled = true
         buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...'
@@ -653,17 +847,21 @@
         statusMsg.innerHTML = '<i class="fas fa-info-circle"></i> Processing request...'
         containerElement.appendChild(statusMsg)
         
+        // Prepare the data to send to N8N
+        const requestData = {
+          fileUrl: fileUrl,
+          fileName: fileName,
+          formData: formData,
+          timestamp: new Date().toISOString()
+        }
+        
         // Send request to N8N webhook
         fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            fileUrl: fileUrl,
-            fileName: fileName,
-            timestamp: new Date().toISOString()
-          })
+          body: JSON.stringify(requestData)
         })
         .then(response => {
           if (!response.ok) {
@@ -676,6 +874,31 @@
           statusMsg.className = 'status-message success'
           statusMsg.innerHTML = '<i class="fas fa-check-circle"></i> Request sent. Please wait while the summary is being generated in your file.'
           buttonElement.innerHTML = '<i class="fas fa-check"></i> Workflow Triggered'
+          
+          // Add metadata about who submitted
+          const fileDetails = document.querySelectorAll('.file-details');
+          if (fileDetails.length > 0) {
+            const lastFileDetails = fileDetails[fileDetails.length - 1];
+            
+            // Check if metadata already exists
+            let metaDiv = lastFileDetails.querySelector('.file-meta');
+            if (!metaDiv) {
+              metaDiv = document.createElement('div');
+              metaDiv.className = 'file-meta';
+              metaDiv.style = 'margin-top:5px; font-size:0.8rem; color:var(--text-light);';
+              lastFileDetails.appendChild(metaDiv);
+            }
+            
+            // Display metadata from both forms
+            metaDiv.innerHTML = `
+              <b>Employee:</b> <i class="fas fa-user"></i> ${formData.employee?.employeeName || 'Anonymous'} | 
+              <i class="fas fa-project-diagram"></i> ${formData.employee?.projectName || 'Unspecified'}
+              <br>
+              <b>CP:</b> <i class="fas fa-user"></i> ${formData.cp?.cpName || 'Anonymous'} | 
+              <i class="fas fa-briefcase"></i> ${formData.cp?.jobTitle || 'Unspecified'} | 
+              <i class="fas fa-building"></i> ${formData.cp?.companyName || 'Unspecified'}
+            `;
+          }
         })
         .catch(error => {
           console.error('Error triggering N8N workflow:', error)
@@ -684,6 +907,49 @@
           buttonElement.disabled = false
           buttonElement.innerHTML = '<i class="fas fa-redo"></i> Retry Trigger N8N Workflow'
         })
+      }
+      
+      // Handle the "Submit for Summarization" button in the file list section
+      if (submitForSummarizationBtn) {
+        submitForSummarizationBtn.addEventListener('click', function() {
+          if (!uploadedFileUrl || !uploadedFileName) {
+            formStatus.style.display = 'flex';
+            formStatus.className = 'status-message error';
+            formStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i> No file uploaded. Please upload a file first.';
+            return;
+          }
+          
+          // Get form values from both forms
+          const employeeName = document.getElementById('employee-name').value
+          const projectName = document.getElementById('project-name').value
+          const cpName = document.getElementById('cp-name').value
+          const jobTitle = document.getElementById('job-title').value
+          const companyName = document.getElementById('company-name').value
+          
+          let formData = {
+            employee: {
+              employeeName: employeeName,
+              projectName: projectName
+            },
+            cp: {
+              cpName: cpName,
+              jobTitle: jobTitle,
+              companyName: companyName
+            }
+          }
+          
+          // Show processing status
+          formStatus.style.display = 'flex';
+          formStatus.className = 'status-message processing';
+          formStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing your request...';
+          
+          // Disable button
+          submitForSummarizationBtn.disabled = true;
+          submitForSummarizationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+          
+          // Trigger the N8N workflow
+          triggerN8nWorkflow(uploadedFileUrl, uploadedFileName, submitForSummarizationBtn, summarizeContainer, formData);
+        });
       }
     </script>
   </body>
